@@ -7,12 +7,14 @@ import cl.telematica.controlmultimedios.connections.ConnectionManager;
 import cl.telematica.controlmultimedios.interfaces.DownloadListener;
 import cl.telematica.controlmultimedios.models.EarthQuakeDataModel;
 import cl.telematica.controlmultimedios.parsers.RssParser;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 import android.app.Activity;
 import android.content.Intent;
 
@@ -28,8 +30,7 @@ public class MainActivity extends Activity implements DownloadListener {
 		
 		listView = (ListView) findViewById(R.id.listView1);
 		
-		new ConnectionManager(this, 10000, 10000, "GET")
-					.execute(getString(R.string.url));
+		new ConexionAsincronica().execute();
 	}
 
 	@Override
@@ -67,5 +68,49 @@ public class MainActivity extends Activity implements DownloadListener {
 			progressBar.setVisibility(View.GONE);
 		}
 	}
-
+	
+	private void conexion()
+	{
+		new ConnectionManager(this, 10000, 10000, "GET")
+		.execute(getString(R.string.url));
+	}
+	
+	
+	private class ConexionAsincronica extends AsyncTask<Void, Integer, Boolean> {
+		 
+	    @Override
+	    protected Boolean doInBackground(Void... params) {
+	 
+	    	conexion();
+	 
+	        return true;
+	    }
+	 
+	    /*@Override
+	    protected void onProgressUpdate(Integer... values) {
+	        int progreso = values[0].intValue();
+	 
+	        progressBar.setProgress(progreso);
+	    }*/
+	 
+	    @Override
+	    protected void onPreExecute() {
+	    	progressBar.setMax(100);
+	    	progressBar.setProgress(0);
+	    }
+	 
+	    @Override
+	    protected void onPostExecute(Boolean result) {
+	        if(result){
+	            Toast.makeText(MainActivity.this, "Tarea finalizada!",
+	                    Toast.LENGTH_SHORT).show();
+	        }
+	    }
+	 
+	    @Override
+	    protected void onCancelled() {
+	        Toast.makeText(MainActivity.this, "Tarea cancelada!",
+	                Toast.LENGTH_SHORT).show();
+	    }
+	}
 }
